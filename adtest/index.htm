@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turkish Ad Hosts test sayfası</title>
+    <style>
+        body {
+            text-align: center;
+        }
+
+        img {
+            display: block;
+            margin: 0 auto;
+        }
+
+        img:not([src]) + p {
+            display: block;
+        }
+
+        img[src] + p {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <img src="http://adtest.avalibeyaz.com/1.png" onerror="this.style.display='none'; document.getElementById('yazi').style.display='block';">
+    <p id="yazi" style="display: none;">Turkish Ad Hosts başarılı bir şekilde çalışıyor.</p>
+</body>
+</html>
