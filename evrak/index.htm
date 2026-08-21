@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Evrak App Güncelleme</title>
+</head>
+<body>
+<script>
+  var LATEST_VERSION = "1.0.0";
+  var APK_URL = "https://github.com/symbuzzer/evrak/releases/latest/download/evrak.apk";
+
+  function getQueryParam(name) {
+    var match = new RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+    return match ? decodeURIComponent(match[1].replace(/\+/g, ' ')) : null;
+  }
+
+  var ver = getQueryParam('ver');
+
+  if (ver === null) {
+    window.location.href = APK_URL;
+  } else if (ver !== LATEST_VERSION) {
+    window.location.href = APK_URL;
+  } else {
+    alert("Güncelleme mevcut değil");
+    window.close();
+  }
+</script>
+</body>
+</html>
