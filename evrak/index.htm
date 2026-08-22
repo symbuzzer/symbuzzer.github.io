@@ -7,24 +7,64 @@
 </head>
 <body>
 <script>
-  var LATEST_VERSION = "1.0.0";
-  var APK_URL = "https://github.com/symbuzzer/Evrak/releases/latest/download/Evrak.apk";
+  var REPO = "symbuzzer/Evrak";
+  var APK_URL_FALLBACK = "https://github.com/symbuzzer/Evrak/releases/latest/download/Evrak.apk";
 
   function getQueryParam(name) {
     var match = new RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
     return match ? decodeURIComponent(match[1].replace(/\+/g, ' ')) : null;
   }
 
+  function stripV(tag) {
+    return tag.replace(/^v/i, '');
+  }
+
+  function compareVersions(a, b) {
+    var pa = a.split('.').map(Number);
+    var pb = b.split('.').map(Number);
+    var len = Math.max(pa.length, pb.length);
+    for (var i = 0; i < len; i++) {
+      var na = pa[i] || 0;
+      var nb = pb[i] || 0;
+      if (na < nb) return -1;
+      if (na > nb) return 1;
+    }
+    return 0;
+  }
+
   var ver = getQueryParam('ver');
 
-  if (ver === null) {
-    window.location.href = APK_URL;
-  } else if (ver !== LATEST_VERSION) {
-    window.location.href = APK_URL;
-  } else {
-    alert("Güncelleme mevcut değil!");
-    window.close();
-  }
+  fetch('https://api.github.com/repos/' + REPO + '/releases/latest')
+    .then(function(res) {
+      if (!res.ok) throw new Error('API hatası: ' + res.status);
+      return res.json();
+    })
+    .then(function(data) {
+      var latestVersion = stripV(data.tag_name);
+
+      var apkUrl = APK_URL_FALLBACK;
+      if (data.assets && data.assets.length) {
+        for (var i = 0; i < data.assets.length; i++) {
+          if (/\.apk$/i.test(data.assets[i].name)) {
+            apkUrl = data.assets[i].browser_download_url;
+            break;
+          }
+        }
+      }
+
+      if (ver === null) {
+        window.location.href = apkUrl;
+      } else if (compareVersions(ver, latestVersion) < 0) {
+        window.location.href = apkUrl;
+      } else {
+        alert("Güncelleme mevcut değil!");
+        window.close();
+      }
+    })
+    .catch(function(err) {
+      console.error(err);
+      alert("Sürüm bilgisi alınamadı, lütfen daha sonra tekrar deneyin.");
+    });
 </script>
 </body>
 </html>
