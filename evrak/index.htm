@@ -6,19 +6,19 @@
 <title>Evrak App Güncelleme</title>
 </head>
 <body>
+<p id="status">Sürüm kontrol ediliyor...</p>
 <script>
   var REPO = "symbuzzer/Evrak";
   var APK_URL_FALLBACK = "https://github.com/symbuzzer/Evrak/releases/latest/download/Evrak.apk";
+  var statusEl = document.getElementById('status');
 
   function getQueryParam(name) {
     var match = new RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
     return match ? decodeURIComponent(match[1].replace(/\+/g, ' ')) : null;
   }
-
   function stripV(tag) {
     return tag.replace(/^v/i, '');
   }
-
   function compareVersions(a, b) {
     var pa = a.split('.').map(Number);
     var pb = b.split('.').map(Number);
@@ -32,8 +32,12 @@
     return 0;
   }
 
-  var ver = getQueryParam('ver');
+  function startDownload(apkUrl) {
+    statusEl.textContent = "İndirme başladı...";
+    window.location.href = apkUrl;
+  }
 
+  var ver = getQueryParam('ver');
   fetch('https://api.github.com/repos/' + REPO + '/releases/latest')
     .then(function(res) {
       if (!res.ok) throw new Error('API hatası: ' + res.status);
@@ -41,7 +45,6 @@
     })
     .then(function(data) {
       var latestVersion = stripV(data.tag_name);
-
       var apkUrl = APK_URL_FALLBACK;
       if (data.assets && data.assets.length) {
         for (var i = 0; i < data.assets.length; i++) {
@@ -52,17 +55,24 @@
         }
       }
 
-      if (ver === null) {
-        window.location.href = apkUrl;
-      } else if (compareVersions(ver, latestVersion) < 0) {
-        window.location.href = apkUrl;
+      var updateAvailable = (ver === null) || (compareVersions(ver, latestVersion) < 0);
+
+      if (updateAvailable) {
+        statusEl.textContent = "";
+        if (window.confirm("Güncelleme bulundu! İndirmek ister misiniz?")) {
+          startDownload(apkUrl);
+        } else {
+          window.close();
+        }
       } else {
+        statusEl.textContent = "Güncelleme mevcut değil!";
         alert("Güncelleme mevcut değil!");
         window.close();
       }
     })
     .catch(function(err) {
       console.error(err);
+      statusEl.textContent = "Sürüm bilgisi alınamadı.";
       alert("Sürüm bilgisi alınamadı, lütfen daha sonra tekrar deneyin.");
     });
 </script>
